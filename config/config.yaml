@@ -1,0 +1,61 @@
+regions:
+  - name: "Mount Fromme"
+    region: "north shore"
+    lat: 49.358723 
+    lon: -123.052134
+    drainage_index: 1.0
+    description: "Classic North Shore loam, rocks, and wood. Moderate drainage, holds moisture under canopy."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.358723,-123.052134"
+  - name: "Mount Seymour"
+    region: "north shore"
+    lat: 49.344324 
+    lon: -122.971444
+    drainage_index: 1.0
+    description: "Deep roots, granite slabs, and loam. Moderate drainage, holds moisture."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.344324,-122.971444"
+  - name: "Cypress Mountain"
+    region: "north shore"
+    lat: 49.358882
+    lon: -123.210135
+    drainage_index: 1.0
+    description: "Steep, rocky slabs and roots. Drains relatively quickly compared to Fromme/Seymour."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.358882,-123.210135"
+  - name: "Burke Mountain"
+    region: "north shore"
+    lat: 49.316354 
+    lon: -122.736956
+    drainage_index: 1.0
+    description: "Clay-heavy soil and deep loam. Slow to drain, remains muddy and wet for long periods."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.316354,-122.736956"
+  - name: "Eagle Mountain"
+    region: "north shore"
+    lat: 49.318793 
+    lon: -122.823914
+    drainage_index: 1.0
+    description: "Dense canopy, clay-heavy soil, and wet roots. Retains water, slow to dry out."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.318793,-122.823914"
+  - name: "Alice Lake"
+    region: "squamish"
+    lat: 49.760045 
+    lon: -123.114909
+    drainage_index: 1.0
+    description: "Squamish granite slabs and sandy soil. Drains exceptionally fast, rarely muddy."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.760045,-123.114909"
+  - name: "Diamond Head"
+    region: "squamish"
+    lat: 49.745142 
+    lon: -123.077033
+    drainage_index: 1.0
+    description: "Higher elevation, gravelly dirt and rocky slabs. Good drainage, can hold snow in early spring."
+    maps_link: "https://www.google.com/maps/search/?api=1&query=49.745142,-123.077033"
+
+
+gemini_settings:
+  model: "gemini-3.5-flash"
+  dry_run_model: "gemini-3.1-flash-lite"
+  temperature: 0.1
+
+email_settings:
+  subject_prefix: "🌲 Trail Condition Forecast & Ride Weather Report"
+  sender_name: "Trail Bot"
+  default_recipients: []

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Trail Conditions Briefing</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f6f8;
+      color: #333333;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      border: 1px solid #e1e4e8;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1b4d3e, #0f2a4a);
+      color: #ffffff;
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      border-bottom: 2px solid #eaeaea;
+      padding-bottom: 8px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      border: 1px solid #edf2f7;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f7f9fa;
+      color: #4a5568;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      border-bottom: 2px solid #edf2f7;
+    }
+
+    td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 13.5px;
+    }
+
+    .region-name-cell {
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .maps-icon {
+      font-size: 12px;
+      text-decoration: none;
+      color: #3182ce;
+      margin-left: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 5px;
+      text-transform: uppercase;
+      text-align: center;
+      min-width: 42px;
+    }
+
+    .badge-dusty {
+      background-color: #fcf5e3;
+      color: #b07c1c;
+      border: 1px solid #f0d392;
+    }
+
+    .badge-dry {
+      background-color: #eaf7ec;
+      color: #2e7d32;
+      border: 1px solid #c1e7c4;
+    }
+
+    .badge-good {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+      border: 1px solid #a5d6a7;
+    }
+
+    .badge-damp {
+      background-color: #e1f5fe;
+      color: #0288d1;
+      border: 1px solid #b3e5fc;
+    }
+
+    .badge-wet {
+      background-color: #fff3e0;
+      color: #e65100;
+      border: 1px solid #ffe0b2;
+    }
+
+    .badge-muddy {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    .badge-na {
+      background-color: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .region-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      background-color: #ffffff;
+    }
+
+    .card-header {
+      background-color: #f8fafc;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .card-drainage {
+      font-size: 11px;
+      color: #64748b;
+      background-color: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0 0 12px 0;
+      font-style: italic;
+    }
+
+    .history-badge {
+      font-size: 11px;
+      background-color: #f1f5f9;
+      color: #475569;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-right: 6px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .footer {
+      background-color: #f8fafc;
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: #64748b;
+      border-top: 1px solid #edf2f7;
+    }
+
+    .footer a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌲 {{ active_region }} Trail Conditions</h1>
+      <p>Daily 2-Hour Ride Conditions Briefing | Forecast for {{ current_date }}</p>
+    </div>
+
+    <div class="content">
+
+
+      <div class="section-title">📊 Summary for {{ current_date }} (8 AM - 10 PM)</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Region</th>
+              {% if regions.values()|list %}
+              {% for win in (regions.values()|list)[0].daily_forecast[0].windows %}
+              <th style="text-align: center; font-size: 9px;">{{ win.time_window }}</th>
+              {% endfor %}
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% set active_win_count = namespace(count=0) %}
+            {% if regions.values()|list %}
+            {% set active_win_count.count = (regions.values()|list)[0].daily_forecast[0].windows|length %}
+            {% endif %}
+
+            {% if active_win_count.count == 0 %}
+            <tr>
+              <td colspan="8"
+                style="text-align: center; color: #64748b; padding: 15px; font-size: 13.5px; font-style: italic;">
+                All ride windows for {{ current_date }} have passed.
+              </td>
+            </tr>
+            {% else %}
+            {% for r_name, r_data in regions.items() %}
+            <tr>
+              <td class="region-name-cell">
+                <a href="{{ r_data.maps_link }}" target="_blank"
+                  style="color: #1b4d3e; text-decoration: underline; font-weight: bold; font-size: 13.5px;">{{ r_name
+                  }}</a>
+                <span style="font-size: 10px; color: #64748b; font-weight: normal; display: block;">{{
+                  r_data.region|title }}</span>
+              </td>
+              {% for win in r_data.daily_forecast[0].windows %}
+              <td style="text-align: center; padding: 10px 4px;">
+                <span style="font-size: 13px; display: block; margin-bottom: 2px;">{{ win.weather_emoji }}</span>
+                <span class="badge badge-{% if win.condition == 'N/A' %}na{% else %}{{ win.condition }}{% endif %}"
+                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: block; margin: 0 auto 2px auto;">{{
+                  win.condition }}</span>
+                <span
+                  style="font-size: 8px; display: block; font-weight: bold; color: {% if win.roots_rocks == 'dry' %}#2E7D32{% elif win.roots_rocks == 'slick' %}#FF9800{% elif win.roots_rocks == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                  {% if win.roots_rocks == 'dry' %}🟢 Grippy{% elif win.roots_rocks == 'slick' %}🟡 Slick{% elif
+                  win.roots_rocks == 'N/A' %}⚪ Passed{% else %}🔴 Slippery{% endif %}
+                </span>
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title" id="forecast-grids-title">🏔️ {{ forecast_days }}-Day Forecast Grids (8 AM - 10 PM)
+      </div>
+
+
+
+      <!-- Forecast cards listed sequentially (compact layout) -->
+      {% for r_name, r_data in regions.items() %}
+      <div class="region-card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="card-title" style="margin: 0;">{{ r_name }} <span
+              style="font-size: 12px; color: #64748b; font-weight: normal; margin-left: 6px;">({{ r_data.region|title
+              }})</span></h3>
+          <div style="font-size: 11px; color: #64748b;">
+            📍 Weather Station: <a
+              href="https://www.google.com/maps/search/?api=1&query={{ r_data.station_info.latitude }},{{ r_data.station_info.longitude }}"
+              target="_blank" style="color: #3182ce; text-decoration: none;">({{
+              "%.4f"|format(r_data.station_info.latitude) }}, {{ "%.4f"|format(r_data.station_info.longitude) }})</a> |
+            <strong>{{ "%.1f"|format(r_data.station_info.distance_km) }} km</strong> away from trail center
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div
+            style="font-size: 11.5px; color: #475569; margin-bottom: 12px; background-color: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #edf2f7;">
+            <strong style="color: #1e293b; display: block; margin-bottom: 6px;">📈 Recent Daily History ({{
+              r_data.past_days_daily|length }}x24h):</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              {% for h_day in r_data.past_days_daily %}
+              <div
+                style="background-color: #ffffff; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 11px;">
+                <strong>{{ h_day.date.split('-')[1] }}/{{ h_day.date.split('-')[2] }}</strong>: {{ h_day.weather_emoji
+                }} {{ "%.1f"|format(h_day.precipitation) }}mm | {{ "%.0f"|format(h_day.temp_mean) }}°C
+              </div>
+              {% endfor %}
+              {% if r_data.today_so_far %}
+              <div
+                style="background-color: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; font-weight: bold; color: #1e293b;">
+                <strong>Today So Far</strong>: {{ r_data.today_so_far.weather_emoji }} {{
+                "%.1f"|format(r_data.today_so_far.precipitation) }}mm | {{ "%.0f"|format(r_data.today_so_far.temp_mean)
+                }}°C ({{ r_data.today_so_far.hours_count }}h)
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Render Today's Grid -->
+          {% set today = r_data.daily_forecast[0] %}
+          <h4 style="font-size: 13px; color: #1b4d3e; margin: 12px 0 6px 0;">📅 {{ today.label }} ({{ today.date }})
+          </h4>
+          <table
+            style="width: 100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 15px;">
+            <thead>
+              <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th
+                  style="padding: 6px; font-size: 10px; text-align: left; width: 100px; border-right: 1px solid #e2e8f0;">
+                  Hour</th>
+                {% for win in today.windows %}
+                <th style="padding: 6px; font-size: 9px; text-align: center;">{{ win.time_window }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td
+                  style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
+                  Weather</td>
+                {% for win in today.windows %}
+                <td style="padding: 6px; text-align: center; font-size: 13px;" title="{{ win.weather_desc }}">{{
+                  win.weather_emoji }}</td>
+                {% endfor %}
+              </tr>
+
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td
+                  style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
+                  Temp</td>
+                {% for win in today.windows %}
+                <td style="padding: 6px; text-align: center; font-size: 11px; color: #334155;">{% if win.condition ==
+                  'N/A' %}-{% else %}{{ "%.0f"|format(win.temp) }}°C{% endif %}</td>
+                {% endfor %}
+              </tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td
+                  style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
+                  Precipitation</td>
+                {% for win in today.windows %}
+                <td style="padding: 6px; text-align: center; font-size: 11px; color: #334155;">{% if win.condition ==
+                  'N/A' %}-{% else %}{{ "%.1f"|format(win.precipitation) }} mm{% endif %}</td>
+                {% endfor %}
+              </tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td
+                  style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
+                  Soil</td>
+                {% for win in today.windows %}
+                <td style="padding: 6px; text-align: center;">
+                  <span class="badge badge-{% if win.condition == 'N/A' %}na{% else %}{{ win.condition }}{% endif %}"
+                    style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block;">{{ win.condition
+                    }}</span>
+                </td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <td
+                  style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
+                  Roots/Rocks</td>
+                {% for win in today.windows %}
+                <td
+                  style="padding: 6px; text-align: center; font-size: 8px; font-weight: bold; color: {% if win.roots_rocks == 'dry' %}#2E7D32{% elif win.roots_rocks == 'slick' %}#FF9800{% elif win.roots_rocks == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                  {% if win.roots_rocks == 'dry' %}🟢 Grippy{% elif win.roots_rocks == 'slick' %}🟡 Slick{% elif
+                  win.roots_rocks == 'N/A' %}⚪ Passed{% else %}🔴 Slippery{% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+          </table>
+
+          <div
+            style="margin-top: 12px; font-size: 13px; border-left: 2px solid #1b4d3e; padding-left: 10px; color: #475569; margin-bottom: 12px;">
+            <strong style="display: block; margin-bottom: 4px; color: #1b4d3e;">📅 {{ today.label }}'s Analysis &
+              Forecast Reasoning:</strong>
+            <div style="line-height: 1.4;"><em>{{ today.reasoning }}</em></div>
+          </div>
+
+          <!-- Render Next Days Summary -->
+          {% if r_data.daily_forecast|length > 1 %}
+          <div
+            style="margin-top: 12px; padding: 10px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #edf2f7; font-size: 12px; color: #475569;">
+            <strong style="color: #1b4d3e; display: block; margin-bottom: 6px;">📅 Next Days Outlook:</strong>
+            {% for day in r_data.daily_forecast[1:] %}
+            {% set total_precip = day.windows|map(attribute='precipitation')|sum %}
+            {% set temp_list = day.windows|map(attribute='temp')|list %}
+            {% set min_temp = temp_list|min if temp_list|length > 0 else 0 %}
+            {% set max_temp = temp_list|max if temp_list|length > 0 else 0 %}
+            {% set emoji_list = day.windows|map(attribute='weather_emoji')|list %}
+            {% set weather_emoji = emoji_list[3] if emoji_list|length > 3 else (emoji_list[0] if emoji_list else '☀️')
+            %}
+
+            <div style="margin-bottom: 8px; line-height: 1.4;">
+              • <strong>{{ day.label }} ({{ day.date }})</strong>:
+              <span style="font-size: 14px;">{{ weather_emoji }}</span> {{ "%.0f"|format(min_temp) }}-{{
+              "%.0f"|format(max_temp) }}°C | {{ "%.1f"|format(total_precip) }}mm rain
+              <div style="margin-left: 10px; margin-top: 4px; font-size: 11.5px; color: #475569;">
+                <strong>Morning</strong>:
+                <span
+                  class="badge badge-{% if day.morning_soil == 'N/A' %}na{% else %}{{ day.morning_soil }}{% endif %}"
+                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
+                  day.morning_soil }}</span>
+                <span
+                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.morning_rr == 'dry' %}#2E7D32{% elif day.morning_rr == 'slick' %}#FF9800{% elif day.morning_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                  {% if day.morning_rr == 'dry' %}🟢 Grippy{% elif day.morning_rr == 'slick' %}🟡 Slick{% elif
+                  day.morning_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
+                </span>
+                &nbsp;|&nbsp;
+                <strong>Afternoon</strong>:
+                <span
+                  class="badge badge-{% if day.afternoon_soil == 'N/A' %}na{% else %}{{ day.afternoon_soil }}{% endif %}"
+                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
+                  day.afternoon_soil }}</span>
+                <span
+                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.afternoon_rr == 'dry' %}#2E7D32{% elif day.afternoon_rr == 'slick' %}#FF9800{% elif day.afternoon_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                  {% if day.afternoon_rr == 'dry' %}🟢 Grippy{% elif day.afternoon_rr == 'slick' %}🟡 Slick{% elif
+                  day.afternoon_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
+                </span>
+                &nbsp;|&nbsp;
+                <strong>Evening</strong>:
+                <span
+                  class="badge badge-{% if day.evening_soil == 'N/A' %}na{% else %}{{ day.evening_soil }}{% endif %}"
+                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
+                  day.evening_soil }}</span>
+                <span
+                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.evening_rr == 'dry' %}#2E7D32{% elif day.evening_rr == 'slick' %}#FF9800{% elif day.evening_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                  {% if day.evening_rr == 'dry' %}🟢 Grippy{% elif day.evening_rr == 'slick' %}🟡 Slick{% elif
+                  day.evening_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
+                </span>
+              </div>
+              <div style="margin-left: 10px; font-style: italic; color: #64748b; font-size: 11px;">"{{ day.reasoning }}"
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="footer">
+      <p>Generated automatically on {{ real_generation_date }} PST.</p>
+      <p>Weather data provided by the <a href="https://open-meteo.com/" target="_blank">Open-Meteo API</a>. Predictions
+        processed using {% if gemini_active %}Gemini LLM Analysis and {% else %} {% endif %} Soil Moisture Saturation
+        Heuristic Formula.</p>
+    </div>
+  </div>
+</body>
+
+</html>
