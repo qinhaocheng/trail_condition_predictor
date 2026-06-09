@@ -23,7 +23,7 @@ An automated, data-driven Python system that fetches historical and forecast wea
 - **Beautiful HTML Conditions Dashboard**:
   - Responsive web layout hosted for free on GitHub Pages.
   - High-contrast color-coded condition badges (`dusty`, `dry`, `good`, `damp`, `wet`, `muddy`).
-  - Regional cards displaying summaries of the past 7 days of weather alongside a 3-day forecast table.
+  - Regional cards displaying summaries of the past 7 days of weather alongside full 2-hour resolution forecast grids for all 3 forecast days.
   - Automated trail warnings for regions showing muddy status or facing heavy rainfall (>10mm).
 - **Automated Deployments**: Run on a cron schedule every 3 hours during active waking hours via GitHub Actions, auto-publishing to your Pages site.
 

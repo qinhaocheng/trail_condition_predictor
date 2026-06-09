@@ -334,10 +334,15 @@
             </div>
           </div>
 
-          <!-- Render Today's Grid -->
-          {% set today = r_data.daily_forecast[0] %}
-          <h4 style="font-size: 13px; color: #1b4d3e; margin: 12px 0 6px 0;">📅 {{ today.label }} ({{ today.date }})
-          </h4>
+          <!-- Render Forecast Grids for All Days -->
+          {% for day in r_data.daily_forecast %}
+          <h4 style="font-size: 13px; color: #1b4d3e; margin: 16px 0 6px 0;">📅 {{ day.label }} ({{ day.date }})</h4>
+          
+          {% if day.windows|length == 0 %}
+          <div style="font-size: 13px; color: #64748b; font-style: italic; padding: 10px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #edf2f7; margin-bottom: 15px;">
+            All ride windows for {{ day.label }} have passed.
+          </div>
+          {% else %}
           <table
             style="width: 100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 15px;">
             <thead>
@@ -345,7 +350,7 @@
                 <th
                   style="padding: 6px; font-size: 10px; text-align: left; width: 100px; border-right: 1px solid #e2e8f0;">
                   Hour</th>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <th style="padding: 6px; font-size: 9px; text-align: center;">{{ win.time_window }}</th>
                 {% endfor %}
               </tr>
@@ -355,7 +360,7 @@
                 <td
                   style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
                   Weather</td>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <td style="padding: 6px; text-align: center; font-size: 13px;" title="{{ win.weather_desc }}">{{
                   win.weather_emoji }}</td>
                 {% endfor %}
@@ -365,7 +370,7 @@
                 <td
                   style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
                   Temp</td>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <td style="padding: 6px; text-align: center; font-size: 11px; color: #334155;">{% if win.condition ==
                   'N/A' %}-{% else %}{{ "%.0f"|format(win.temp) }}°C{% endif %}</td>
                 {% endfor %}
@@ -374,7 +379,7 @@
                 <td
                   style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
                   Precipitation</td>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <td style="padding: 6px; text-align: center; font-size: 11px; color: #334155;">{% if win.condition ==
                   'N/A' %}-{% else %}{{ "%.1f"|format(win.precipitation) }} mm{% endif %}</td>
                 {% endfor %}
@@ -383,7 +388,7 @@
                 <td
                   style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
                   Soil</td>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <td style="padding: 6px; text-align: center;">
                   <span class="badge badge-{% if win.condition == 'N/A' %}na{% else %}{{ win.condition }}{% endif %}"
                     style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block;">{{ win.condition
@@ -395,7 +400,7 @@
                 <td
                   style="padding: 6px; font-weight: bold; font-size: 11px; color: #475569; background-color: #fbfcfd; border-right: 1px solid #e2e8f0;">
                   Roots/Rocks</td>
-                {% for win in today.windows %}
+                {% for win in day.windows %}
                 <td
                   style="padding: 6px; text-align: center; font-size: 8px; font-weight: bold; color: {% if win.roots_rocks == 'dry' %}#2E7D32{% elif win.roots_rocks == 'slick' %}#FF9800{% elif win.roots_rocks == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
                   {% if win.roots_rocks == 'dry' %}🟢 Grippy{% elif win.roots_rocks == 'slick' %}🟡 Slick{% elif
@@ -405,72 +410,15 @@
               </tr>
             </tbody>
           </table>
-
-          <div
-            style="margin-top: 12px; font-size: 13px; border-left: 2px solid #1b4d3e; padding-left: 10px; color: #475569; margin-bottom: 12px;">
-            <strong style="display: block; margin-bottom: 4px; color: #1b4d3e;">📅 {{ today.label }}'s Analysis &
-              Forecast Reasoning:</strong>
-            <div style="line-height: 1.4;"><em>{{ today.reasoning }}</em></div>
-          </div>
-
-          <!-- Render Next Days Summary -->
-          {% if r_data.daily_forecast|length > 1 %}
-          <div
-            style="margin-top: 12px; padding: 10px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #edf2f7; font-size: 12px; color: #475569;">
-            <strong style="color: #1b4d3e; display: block; margin-bottom: 6px;">📅 Next Days Outlook:</strong>
-            {% for day in r_data.daily_forecast[1:] %}
-            {% set total_precip = day.windows|map(attribute='precipitation')|sum %}
-            {% set temp_list = day.windows|map(attribute='temp')|list %}
-            {% set min_temp = temp_list|min if temp_list|length > 0 else 0 %}
-            {% set max_temp = temp_list|max if temp_list|length > 0 else 0 %}
-            {% set emoji_list = day.windows|map(attribute='weather_emoji')|list %}
-            {% set weather_emoji = emoji_list[3] if emoji_list|length > 3 else (emoji_list[0] if emoji_list else '☀️')
-            %}
-
-            <div style="margin-bottom: 8px; line-height: 1.4;">
-              • <strong>{{ day.label }} ({{ day.date }})</strong>:
-              <span style="font-size: 14px;">{{ weather_emoji }}</span> {{ "%.0f"|format(min_temp) }}-{{
-              "%.0f"|format(max_temp) }}°C | {{ "%.1f"|format(total_precip) }}mm rain
-              <div style="margin-left: 10px; margin-top: 4px; font-size: 11.5px; color: #475569;">
-                <strong>Morning</strong>:
-                <span
-                  class="badge badge-{% if day.morning_soil == 'N/A' %}na{% else %}{{ day.morning_soil }}{% endif %}"
-                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
-                  day.morning_soil }}</span>
-                <span
-                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.morning_rr == 'dry' %}#2E7D32{% elif day.morning_rr == 'slick' %}#FF9800{% elif day.morning_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
-                  {% if day.morning_rr == 'dry' %}🟢 Grippy{% elif day.morning_rr == 'slick' %}🟡 Slick{% elif
-                  day.morning_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
-                </span>
-                &nbsp;|&nbsp;
-                <strong>Afternoon</strong>:
-                <span
-                  class="badge badge-{% if day.afternoon_soil == 'N/A' %}na{% else %}{{ day.afternoon_soil }}{% endif %}"
-                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
-                  day.afternoon_soil }}</span>
-                <span
-                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.afternoon_rr == 'dry' %}#2E7D32{% elif day.afternoon_rr == 'slick' %}#FF9800{% elif day.afternoon_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
-                  {% if day.afternoon_rr == 'dry' %}🟢 Grippy{% elif day.afternoon_rr == 'slick' %}🟡 Slick{% elif
-                  day.afternoon_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
-                </span>
-                &nbsp;|&nbsp;
-                <strong>Evening</strong>:
-                <span
-                  class="badge badge-{% if day.evening_soil == 'N/A' %}na{% else %}{{ day.evening_soil }}{% endif %}"
-                  style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: inline-block; vertical-align: middle; margin-left: 2px;">{{
-                  day.evening_soil }}</span>
-                <span
-                  style="font-size: 10px; font-weight: bold; margin-left: 2px; color: {% if day.evening_rr == 'dry' %}#2E7D32{% elif day.evening_rr == 'slick' %}#FF9800{% elif day.evening_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
-                  {% if day.evening_rr == 'dry' %}🟢 Grippy{% elif day.evening_rr == 'slick' %}🟡 Slick{% elif
-                  day.evening_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
-                </span>
-              </div>
-              <div style="margin-left: 10px; font-style: italic; color: #64748b; font-size: 11px;">"{{ day.reasoning }}"
-              </div>
-            </div>
-            {% endfor %}
-          </div>
           {% endif %}
+
+          <div
+            style="margin-top: 12px; font-size: 13px; border-left: 2px solid #1b4d3e; padding-left: 10px; color: #475569; margin-bottom: 20px;">
+            <strong style="display: block; margin-bottom: 4px; color: #1b4d3e;">📅 {{ day.label }}'s Analysis &
+              Forecast Reasoning:</strong>
+            <div style="line-height: 1.4;"><em>{{ day.reasoning }}</em></div>
+          </div>
+          {% endfor %}
         </div>
       </div>
       {% endfor %}
