@@ -97,6 +97,7 @@ def evaluate_window(w_idx: int, day_start_h: int, s_list: list,
         rr_cond = 'dry'
         
     return {
+        "window_index": w_info['window_index'],
         "time_window": w_info['time_window'], "condition": cond, "roots_rocks": rr_cond,
         "weather_desc": w_info['weather_desc'], "weather_emoji": w_info['weather_emoji'],
         "temp": w_info['temp_mean'], "precipitation": rain, "score": score, "saturation": sat,
@@ -209,6 +210,7 @@ def evaluate_window_new(w_idx: int, day_start_h: int, swi_labels: list, rsi_labe
     print(f"[{timestamp}]       - Window {w_info['date']} {w_info['time_window']}: SWI={score:.1f}, RSI={rsi_val:.1f}, DI={di_val:.1f} -> Soil={cond}, Roots/Rocks={rr_cond}")
     
     return {
+        "window_index": w_info['window_index'],
         "time_window": w_info['time_window'], "condition": cond, "roots_rocks": rr_cond,
         "weather_desc": w_info['weather_desc'], "weather_emoji": w_info['weather_emoji'],
         "temp": w_info['temp_mean'], "precipitation": rain, "score": score, "saturation": sat, "swi_score": score, "rsi_score": rsi_val, "di_score": di_val,
