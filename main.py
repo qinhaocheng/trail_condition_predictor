@@ -50,7 +50,10 @@ def run_pipeline(args: argparse.Namespace) -> None:
     print(f"Active region selected: {active_region.upper()}. Active zones: {[r['name'] for r in config['regions']]}")
     
     api_key = None if args.no_gemini else (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+    if api_key:
+        api_key = api_key.strip().strip('"').strip("'")
     gemini_enabled = bool(api_key)
+
     
     print(f"Querying Open-Meteo weather data for {len(config['regions'])} regions...")
     raw_weather = fetch_weather(config['regions'])
