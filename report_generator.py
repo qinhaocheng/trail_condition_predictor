@@ -68,23 +68,38 @@ def generate_html_report(regions_predictions: dict, warnings: list,
             else:
                 day['label'] = (briefing_dt + datetime.timedelta(days=d_idx)).strftime("%A")
                     
+            # Group windows by time of day slot
+            morning_wins = [w for w in day['windows'] if w.get('window_index') in [0, 1]]
+            afternoon_wins = [w for w in day['windows'] if w.get('window_index') in [2, 3, 4]]
+            evening_wins = [w for w in day['windows'] if w.get('window_index') in [5, 6]]
+
             def get_worst(wins, key, severity_dict, default):
                 vals = [w[key] for w in wins if w[key].lower().strip() not in ['n/a', 'na', 'passed']]
                 if not vals:
                     return default
                 return max(vals, key=lambda v: severity_dict.get(v.lower().strip(), 0))
                 
-            # Morning: windows 0 and 1
-            day['morning_soil'] = get_worst(day['windows'][:2], 'condition', SOIL_SEVERITY, 'N/A')
-            day['morning_rr'] = get_worst(day['windows'][:2], 'roots_rocks', RR_SEVERITY, 'N/A')
+            def get_common_emoji(wins):
+                emojis = [w['weather_emoji'] for w in wins if w.get('weather_emoji')]
+                if not emojis:
+                    return "☀️"
+                from collections import Counter
+                return Counter(emojis).most_common(1)[0][0]
             
-            # Afternoon: windows 2, 3, and 4
-            day['afternoon_soil'] = get_worst(day['windows'][2:5], 'condition', SOIL_SEVERITY, 'N/A')
-            day['afternoon_rr'] = get_worst(day['windows'][2:5], 'roots_rocks', RR_SEVERITY, 'N/A')
+            # Morning (8 AM - 12 PM)
+            day['morning_soil'] = get_worst(morning_wins, 'condition', SOIL_SEVERITY, 'N/A')
+            day['morning_rr'] = get_worst(morning_wins, 'roots_rocks', RR_SEVERITY, 'N/A')
+            day['morning_emoji'] = get_common_emoji(morning_wins)
             
-            # Evening: windows 5 and 6
-            day['evening_soil'] = get_worst(day['windows'][5:], 'condition', SOIL_SEVERITY, 'N/A')
-            day['evening_rr'] = get_worst(day['windows'][5:], 'roots_rocks', RR_SEVERITY, 'N/A')
+            # Afternoon (12 PM - 6 PM)
+            day['afternoon_soil'] = get_worst(afternoon_wins, 'condition', SOIL_SEVERITY, 'N/A')
+            day['afternoon_rr'] = get_worst(afternoon_wins, 'roots_rocks', RR_SEVERITY, 'N/A')
+            day['afternoon_emoji'] = get_common_emoji(afternoon_wins)
+            
+            # Evening (6 PM - 10 PM)
+            day['evening_soil'] = get_worst(evening_wins, 'condition', SOIL_SEVERITY, 'N/A')
+            day['evening_rr'] = get_worst(evening_wins, 'roots_rocks', RR_SEVERITY, 'N/A')
+            day['evening_emoji'] = get_common_emoji(evening_wins)
         
     t = Template(html_template_str)
     return t.render(

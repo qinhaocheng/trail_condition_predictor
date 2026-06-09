@@ -352,43 +352,69 @@
           <table>
             <thead>
               <tr>
-                <th>Region</th>
-                {% for win in day_meta.windows %}
-                <th style="text-align: center; font-size: 9px;">{{ win.time_window }}</th>
+                <th style="font-size: 10px;">Time of Day</th>
+                {% for r_name in regions.keys() %}
+                <th style="text-align: center; font-size: 10px; font-weight: bold;">{{ r_name }}</th>
                 {% endfor %}
               </tr>
             </thead>
             <tbody>
-              {% if day_meta.windows|length == 0 %}
+              <!-- Morning Row -->
               <tr>
-                <td colspan="8"
-                  style="text-align: center; color: #64748b; padding: 15px; font-size: 13.5px; font-style: italic;">
-                  All ride windows for {{ day_meta.label }} have passed.
+                <td style="font-weight: bold; color: #475569; background-color: #fbfcfd; font-size: 11px;">
+                  🌅 Morning<br><span style="font-size: 8.5px; font-weight: normal; color: #64748b;">(8 AM - 12 PM)</span>
                 </td>
-              </tr>
-              {% else %}
-              {% for r_name, r_data in regions.items() %}
-              {% set r_day = r_data.daily_forecast[day_idx] %}
-              <tr>
-                <td class="region-name-cell">
-                  <a href="{{ r_data.maps_link }}" target="_blank"
-                    style="color: #1b4d3e; text-decoration: underline; font-weight: bold; font-size: 13.5px;">{{ r_name }}</a>
-                  <span style="font-size: 10px; color: #64748b; font-weight: normal; display: block;">{{ r_data.region|title }}</span>
-                </td>
-                {% for win in r_day.windows %}
+                {% for r_name, r_data in regions.items() %}
+                {% set r_day = r_data.daily_forecast[day_idx] %}
                 <td style="text-align: center; padding: 10px 4px;">
-                  <span style="font-size: 13px; display: block; margin-bottom: 2px;">{{ win.weather_emoji }}</span>
-                  <span class="badge badge-{% if win.condition == 'N/A' %}na{% else %}{{ win.condition }}{% endif %}"
-                    style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: block; margin: 0 auto 2px auto;">{{ win.condition }}</span>
+                  <span style="font-size: 13px; display: block; margin-bottom: 2px;">{{ r_day.morning_emoji }}</span>
+                  <span class="badge badge-{% if r_day.morning_soil == 'N/A' or r_day.morning_soil == 'N/A' %}na{% else %}{{ r_day.morning_soil|lower }}{% endif %}"
+                    style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: block; margin: 0 auto 2px auto;">{{ r_day.morning_soil }}</span>
                   <span
-                    style="font-size: 8px; display: block; font-weight: bold; color: {% if win.roots_rocks == 'dry' %}#2E7D32{% elif win.roots_rocks == 'slick' %}#FF9800{% elif win.roots_rocks == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
-                    {% if win.roots_rocks == 'dry' %}🟢 Grippy{% elif win.roots_rocks == 'slick' %}🟡 Slick{% elif win.roots_rocks == 'N/A' %}⚪ Passed{% else %}🔴 Slippery{% endif %}
+                    style="font-size: 8px; display: block; font-weight: bold; color: {% if r_day.morning_rr|lower == 'dry' %}#2E7D32{% elif r_day.morning_rr|lower == 'slick' %}#FF9800{% elif r_day.morning_rr == 'N/A' or r_day.morning_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                    {% if r_day.morning_rr|lower == 'dry' %}🟢 Grippy{% elif r_day.morning_rr|lower == 'slick' %}🟡 Slick{% elif r_day.morning_rr == 'N/A' or r_day.morning_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
                   </span>
                 </td>
                 {% endfor %}
               </tr>
-              {% endfor %}
-              {% endif %}
+
+              <!-- Afternoon Row -->
+              <tr>
+                <td style="font-weight: bold; color: #475569; background-color: #fbfcfd; font-size: 11px;">
+                  ☀️ Afternoon<br><span style="font-size: 8.5px; font-weight: normal; color: #64748b;">(12 PM - 6 PM)</span>
+                </td>
+                {% for r_name, r_data in regions.items() %}
+                {% set r_day = r_data.daily_forecast[day_idx] %}
+                <td style="text-align: center; padding: 10px 4px;">
+                  <span style="font-size: 13px; display: block; margin-bottom: 2px;">{{ r_day.afternoon_emoji }}</span>
+                  <span class="badge badge-{% if r_day.afternoon_soil == 'N/A' or r_day.afternoon_soil == 'N/A' %}na{% else %}{{ r_day.afternoon_soil|lower }}{% endif %}"
+                    style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: block; margin: 0 auto 2px auto;">{{ r_day.afternoon_soil }}</span>
+                  <span
+                    style="font-size: 8px; display: block; font-weight: bold; color: {% if r_day.afternoon_rr|lower == 'dry' %}#2E7D32{% elif r_day.afternoon_rr|lower == 'slick' %}#FF9800{% elif r_day.afternoon_rr == 'N/A' or r_day.afternoon_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                    {% if r_day.afternoon_rr|lower == 'dry' %}🟢 Grippy{% elif r_day.afternoon_rr|lower == 'slick' %}🟡 Slick{% elif r_day.afternoon_rr == 'N/A' or r_day.afternoon_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
+                  </span>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Evening Row -->
+              <tr>
+                <td style="font-weight: bold; color: #475569; background-color: #fbfcfd; font-size: 11px;">
+                  🌙 Evening<br><span style="font-size: 8.5px; font-weight: normal; color: #64748b;">(6 PM - 10 PM)</span>
+                </td>
+                {% for r_name, r_data in regions.items() %}
+                {% set r_day = r_data.daily_forecast[day_idx] %}
+                <td style="text-align: center; padding: 10px 4px;">
+                  <span style="font-size: 13px; display: block; margin-bottom: 2px;">{{ r_day.evening_emoji }}</span>
+                  <span class="badge badge-{% if r_day.evening_soil == 'N/A' or r_day.evening_soil == 'N/A' %}na{% else %}{{ r_day.evening_soil|lower }}{% endif %}"
+                    style="font-size: 7.5px; padding: 2px 3px; min-width: 38px; display: block; margin: 0 auto 2px auto;">{{ r_day.evening_soil }}</span>
+                  <span
+                    style="font-size: 8px; display: block; font-weight: bold; color: {% if r_day.evening_rr|lower == 'dry' %}#2E7D32{% elif r_day.evening_rr|lower == 'slick' %}#FF9800{% elif r_day.evening_rr == 'N/A' or r_day.evening_rr == 'N/A' %}#94a3b8{% else %}#D84315{% endif %};">
+                    {% if r_day.evening_rr|lower == 'dry' %}🟢 Grippy{% elif r_day.evening_rr|lower == 'slick' %}🟡 Slick{% elif r_day.evening_rr == 'N/A' or r_day.evening_rr == 'N/A' %}⚪ N/A{% else %}🔴 Slippery{% endif %}
+                  </span>
+                </td>
+                {% endfor %}
+              </tr>
             </tbody>
           </table>
         </div>
