@@ -1,10 +1,10 @@
-# 🌲 Trail Condition Predictor & Email Briefing System
+# 🌲 Trail Condition Predictor & Dashboard
 
-An automated, data-driven Python system that fetches historical and forecast weather data for seven major mountain biking regions around Vancouver and Squamish, evaluates trail conditions using a sophisticated drainage-aware soil moisture decay model (or Gemini LLM analysis), and emails a daily HTML briefing.
+An automated, data-driven Python system that fetches historical and forecast weather data for seven major mountain biking regions around Vancouver and Squamish, evaluates trail conditions using a sophisticated drainage-aware soil moisture decay model (or Gemini LLM analysis), and publishes a beautiful condition briefing to a GitHub Pages dashboard.
 
 ## Features
 
-- **Decoupled Architecture**: All regions, coordinates, condition thresholds, and weather heuristics are externalized in `config.yaml`.
+- **Decoupled Architecture**: All regions, coordinates, condition thresholds, and weather heuristics are externalized in `config/config.yaml`.
 - **7 Mountain Biking Regions**:
   - Mount Fromme (North Vancouver)
   - Mount Seymour (North Vancouver)
@@ -16,16 +16,16 @@ An automated, data-driven Python system that fetches historical and forecast wea
 - **Advanced Core Heuristics**:
   - Exponential decay model tracking the last 7 days of rainfall & snowmelt.
   - Drying efficiency adjustments based on daily max temperature and mean relative humidity.
-  - **Forecast Rain Overrides**: Prevents dry trails from rating well if active rainfall during the ride immediately saturates the dirt.
+  - **Forecast Overrides**: Prevents dry trails from rating well if active rainfall during the ride immediately saturates the dirt.
 - **Dual-Mode Condition Evaluation**:
-  - **LLM Mode (Gemini)**: If `GEMINI_API_KEY` is present, weather history, forecasts, and drainage indexes are evaluated by Gemini 2.5 Flash to determine conditions and auto-generate highly engaging verbal reasonings.
+  - **LLM Mode (Gemini)**: If `GEMINI_API_KEY` is present, weather history, forecasts, and drainage indexes are evaluated by Gemini to determine conditions and auto-generate highly engaging verbal reasonings.
   - **Rule Mode (Fallback)**: If no key is set or the API fails, a deterministic Python decay model computes the conditions and generates a highly descriptive templated analysis.
-- **Beautiful HTML Email Briefing**:
-  - Responsive layout compatible with modern desktop/mobile clients.
+- **Beautiful HTML Conditions Dashboard**:
+  - Responsive web layout hosted for free on GitHub Pages.
   - High-contrast color-coded condition badges (`dusty`, `dry`, `good`, `damp`, `wet`, `muddy`).
-  - Regional cards linking coordinates directly to Google Maps, displaying summaries of the past 7 days of weather alongside a 4-day forecast table.
+  - Regional cards displaying summaries of the past 7 days of weather alongside a 3-day forecast table.
   - Automated trail warnings for regions showing muddy status or facing heavy rainfall (>10mm).
-- **CI/CD Ready**: Configured to run every morning via GitHub Actions.
+- **Automated Deployments**: Run on a cron schedule every 3 hours during active waking hours via GitHub Actions, auto-publishing to your Pages site.
 
 ---
 
@@ -40,55 +40,33 @@ Clone the repository and install required packages:
 pip install -r requirements.txt
 ```
 
-### 3. Running Locally in Dry-Run Mode
-The script has a `--dry-run` flag which allows you to fetch real weather data, compute all conditions, and export the rendered HTML email output without setting up SMTP credentials:
+### 3. Running Locally
+Run the orchestrator script to fetch weather, evaluate conditions, and write the output dashboard:
 ```bash
-python main.py --dry-run
-```
-This generates an `email_preview.html` file in the project folder. Double-click it to inspect the visual aesthetics, table layouts, and styling in your browser.
-
-### 4. Running Locally with Email Sending
-To send the email, set up the SMTP environment variables and run without `--dry-run`:
-```bash
-# On Windows (PowerShell):
-$env:SMTP_SERVER="smtp.gmail.com"
-$env:SMTP_PORT="587"
-$env:SMTP_USER="your-email@gmail.com"
-$env:SMTP_PASSWORD="your-app-password"
-$env:RECIPIENT_EMAILS="recipient1@gmail.com,recipient2@gmail.com"
-$env:GEMINI_API_KEY="your-gemini-key-optional"
-python3 main.py
-
-# On Linux/macOS:
-export SMTP_SERVER="smtp.gmail.com"
-export SMTP_PORT="587"
-export SMTP_USER="your-email@gmail.com"
-export SMTP_PASSWORD="your-app-password"
-export RECIPIENT_EMAILS="recipient1@gmail.com,recipient2@gmail.com"
-export GEMINI_API_KEY="your-gemini-key-optional"
 python3 main.py
 ```
+This writes the generated dashboard directly to `output/index.html`. You can open this file in your browser to preview the visual aesthetics, table layouts, and styling.
 
-### 5. Alternative: Using a local `secrets.yaml` configuration file
-To avoid setting environment variables on every terminal session:
-1. Copy `secrets.yaml.template` to create a `secrets.yaml` file in the project root:
+- To run with fallback rules instead of calling the Gemini API:
+  ```bash
+  python3 main.py --no-gemini
+  ```
+- To run with the cheaper dry-run Gemini model (e.g., for testing):
+  ```bash
+  python3 main.py --dry-run
+  ```
+
+### 4. Local Secrets
+To run Gemini locally without setting environment variables on every terminal session:
+1. Copy `config/secrets.yaml.template` to create a `config/secrets.yaml` file:
    ```bash
-   cp secrets.yaml.template secrets.yaml
+   cp config/secrets.yaml.template config/secrets.yaml
    ```
-2. Open `secrets.yaml` and enter your credentials:
+2. Open `config/secrets.yaml` and enter your Gemini API Key:
    ```yaml
    GEMINI_API_KEY: "your_copied_api_key_here"
-   SMTP_SERVER: "smtp.gmail.com"
-   SMTP_PORT: 587
-   SMTP_USER: "your-email@gmail.com"
-   SMTP_PASSWORD: "your-app-password"
-   RECIPIENT_EMAILS: "recipient1@gmail.com,recipient2@gmail.com"
    ```
-3. Run the script. The credentials will be loaded automatically:
-   ```bash
-   python3 main.py --dry-run
-   ```
-   *(Note: `secrets.yaml` is automatically listed in `.gitignore` so your keys will never be pushed to Git).*
+   *(Note: `config/secrets.yaml` is automatically ignored in `.gitignore` so your key will never be pushed to Git).*
 
 ---
 
@@ -115,30 +93,22 @@ The score is adjusted up or down based on daily drying conditions:
 - **High Humidity** ($\ge 85\%$): Score is multiplied by `1.2` (dries slower).
 - **Low Humidity** ($< 50\%$): Score is multiplied by `0.8` (dries faster).
 
-### Active Forecast Overrides
-Regardless of preceding week dryness, active forecast rain on the ride day overrides the score:
-- **$\ge 12.0$ mm**: Immediately downgraded to `muddy`.
-- **$\ge 5.0$ mm**: Upgraded to at least `wet`.
-- **$\ge 1.5$ mm**: Upgraded to at least `damp`.
-
 ---
 
-## GitHub Actions Deployment Guide
+## GitHub Actions & Pages Deployment Guide
 
-The briefing system is configured to run daily at 6:00 AM PST (7:00 AM PDT) using GitHub Actions.
+The dashboard is configured to update on schedule every 3 hours from 4:00 AM to 10:00 PM Vancouver Time (UTC cron: `0 2,5,11,14,17,20,23 * * *`).
 
 ### Setup Steps:
-1. **Push code to GitHub**: Create a repository and push this project's files.
-2. **Add Repository Secrets**:
+1. **Enable GitHub Pages**:
+   - Go to your GitHub repository -> **Settings** -> **Pages**.
+   - Under **Build and deployment > Source**, select **GitHub Actions** from the dropdown menu.
+2. **Add Gemini API Key Secret**:
    - Go to your GitHub repository -> **Settings** -> **Secrets and variables** -> **Actions**.
-   - Click **New repository secret** for each of the following:
-     - `SMTP_SERVER`: The host address of your SMTP server (e.g., `smtp.gmail.com` or `smtp.sendgrid.net`).
-     - `SMTP_PORT`: Port number (e.g., `587` for STARTTLS or `465` for SSL).
-     - `SMTP_USER`: Your email address or username used to send the emails.
-     - `SMTP_PASSWORD`: Your password or app-specific password (strongly recommended for Gmail).
-     - `RECIPIENT_EMAILS`: Comma-separated list of email addresses to receive the briefing.
-     - `GEMINI_API_KEY`: *(Optional)* Your Google GenAI API Key. If omitted, the system automatically runs the rule-based local decay engine.
+   - Click **New repository secret** and add:
+     - Name: `GEMINI_API_KEY`
+     - Value: Your Google Gemini API Key. (If omitted, the Actions runner will automatically fall back to the deterministic local decay engine).
 3. **Run Manually**:
    - Go to the **Actions** tab of your repository.
-   - Click on the **Daily Trail Conditions Report** workflow.
-   - Click the **Run workflow** dropdown and select **Run workflow**. This immediately triggers a briefing send!
+   - Select the **Deploy Trail Conditions Dashboard to Pages** workflow.
+   - Click **Run workflow** to trigger a manual deployment. Once complete, your dashboard will be available at your GitHub Pages URL (`https://<username>.github.io/<repository-name>/`).
