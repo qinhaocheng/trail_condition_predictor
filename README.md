@@ -22,9 +22,10 @@ An automated, data-driven Python system that fetches historical and forecast wea
   - **Rule Mode (Fallback)**: If no key is set or the API fails, a deterministic Python decay model computes the conditions and generates a highly descriptive templated analysis.
 - **Beautiful HTML Conditions Dashboard**:
   - Responsive web layout hosted for free on GitHub Pages.
+  - Nested tab navigation (Day tabs at top level, Mountain subtabs at second level) for clean data density.
   - High-contrast color-coded condition badges (`dusty`, `dry`, `good`, `damp`, `wet`, `muddy`).
-  - Regional cards displaying summaries of the past 7 days of weather alongside full 2-hour resolution forecast grids for all 3 forecast days.
-  - Automated trail warnings for regions showing muddy status or facing heavy rainfall (>10mm).
+  - Day-specific overview tables listing all regions at the top of each day's tab.
+  - Detailed mountain analysis including 7 days of recent history, maps, and 2-hour window grids.
 - **Automated Deployments**: Run on a cron schedule every 3 hours during active waking hours via GitHub Actions, auto-publishing to your Pages site.
 
 ---
