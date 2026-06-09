@@ -11,15 +11,15 @@ from config_loader import load_config, load_secrets_to_env
 from weather_fetcher import fetch_weather, process_region_weather
 from evaluator import merge_predictions
 from gemini_client import run_gemini_evaluation
-from email_sender import generate_html_report, send_email_report
+from report_generator import generate_html_report
 
 def parse_arguments() -> argparse.Namespace:
     """Parses command line arguments."""
     parser = argparse.ArgumentParser(description="Daily Trail Conditions Predictor")
-    parser.add_argument("--dry-run", action="store_true", help="Generate HTML report locally but do not send email")
+    parser.add_argument("--dry-run", action="store_true", help="Generate HTML report locally with dry-run Gemini model")
     parser.add_argument("--config", default="config/config.yaml", help="Path to config.yaml file")
     parser.add_argument("--no-gemini", action="store_true", help="Disable Gemini API calls and enforce fallback heuristics")
-    parser.add_argument("--region", default="north shore", choices=["north shore", "squamish"], help="Select active region group (north shore or squamish)")
+    parser.add_argument("--region", default="all", choices=["all", "north shore", "squamish"], help="Select active region group (all, north shore or squamish)")
     return parser.parse_args()
 
 def evaluate_warnings(regions_predictions: dict) -> list:
@@ -45,7 +45,8 @@ def run_pipeline(args: argparse.Namespace) -> None:
     
     # Filter zones to keep only the selected active region
     active_region = args.region.lower().strip()
-    config['regions'] = [r for r in config['regions'] if r.get('region', '').lower().strip() == active_region]
+    if active_region != 'all':
+        config['regions'] = [r for r in config['regions'] if r.get('region', '').lower().strip() == active_region]
     print(f"Active region selected: {active_region.upper()}. Active zones: {[r['name'] for r in config['regions']]}")
     
     api_key = None if args.no_gemini else (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
@@ -55,6 +56,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
     raw_weather = fetch_weather(config['regions'])
     
     # Store raw weather data locally
+    os.makedirs("output", exist_ok=True)
     try:
         import json
         with open("output/raw_weather_data.json", 'w', encoding='utf-8') as f:
@@ -92,21 +94,12 @@ def run_pipeline(args: argparse.Namespace) -> None:
     
     html_content = generate_html_report(regions_predictions, warnings, gemini_active, vancouver_now=vancouver_now)
     
-    if args.dry_run:
-        with open("output/email_preview.html", 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        print("Dry-run active. HTML saved to output/email_preview.html.")
-        print(f"Warnings generated: {warnings}")
-        return
-        
-    try:
-        send_email_report(html_content, regions_predictions, warnings, config)
-        print("Email successfully sent!")
-    except Exception as e:
-        print(f"Error sending email: {e}. Saving copy to output/email_preview.html.", file=sys.stderr)
-        with open("output/email_preview.html", 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        sys.exit(1)
+    with open("output/index.html", 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    print("HTML briefing successfully generated and saved to output/index.html.")
+    if warnings:
+        print(f"Active Warnings: {warnings}")
+
 
 def main() -> None:
     """Entry point."""

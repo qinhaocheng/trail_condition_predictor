@@ -1,0 +1,62 @@
+name: Deploy Trail Conditions Dashboard to Pages
+
+on:
+  schedule:
+    # Runs every 3 hours from 4 AM to 10 PM in Vancouver PDT (UTC-7)
+    # PDT local hours: 4:00, 7:00, 10:00, 13:00, 16:00, 19:00, 22:00
+    # UTC equivalence:  11:00, 14:00, 17:00, 20:00, 23:00, 02:00, 05:00
+    # (Note: during winter PST (UTC-8), this shifts to 3 AM, 6 AM, 9 AM, 12 PM, 3 PM, 6 PM, 9 PM local time)
+    - cron: '0 2,5,11,14,17,20,23 * * *'
+  workflow_dispatch: # Allows manual trigger from the Actions UI
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Trail Condition Predictor
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python main.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the output directory containing index.html
+          path: './output'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

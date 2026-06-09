@@ -3,7 +3,9 @@
 Configuration Loader Module
 Handles parsing the config.yaml file.
 """
+import sys
 import yaml
+
 
 def load_config(config_path: str) -> dict:
     """

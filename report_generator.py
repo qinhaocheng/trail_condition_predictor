@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Email Sender Module (2-Hour Resolution)
-Handles Jinja2 HTML rendering and SMTP mail transmission.
+Report Generator Module (2-Hour Resolution)
+Handles Jinja2 HTML rendering for the trail conditions briefing dashboard.
 """
 import os
 import sys
 import datetime
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from jinja2 import Template
 
 def generate_html_report(regions_predictions: dict, warnings: list, 
-                         gemini_active: bool, template_path: str = "templates/email_template.html",
+                         gemini_active: bool, template_path: str = "templates/briefing_template.html",
                          vancouver_now = None) -> str:
     """Reads HTML template file and renders it with 2-hour window predictions."""
     with open(template_path, 'r', encoding='utf-8') as f:
@@ -97,55 +94,3 @@ def generate_html_report(regions_predictions: dict, warnings: list,
         regions=regions_predictions, warnings=warnings, gemini_active=gemini_active,
         forecast_days=forecast_days, active_region=active_region
     )
-
-def build_text_fallback(regions_predictions: dict, warnings: list) -> str:
-    """Generates a plain-text representation of today's 2-hour windows."""
-    current_date = datetime.datetime.now().strftime("%B %d, %Y")
-    lines = [f"Daily Trail Condition Forecast Briefing - {current_date}", "==================================================", ""]
-    
-    if warnings:
-        lines.append("Alerts:")
-        for w in warnings:
-            lines.append(f" - {w}")
-        lines.append("")
-        
-    for name, data in regions_predictions.items():
-        lines.append(f"{name}:")
-        today_forecast = data['daily_forecast'][0]
-        lines.append(f"  Today's Analysis: {today_forecast['reasoning']}")
-        for win in today_forecast['windows']:
-            lines.append(f"    {win['time_window']}: {win['condition'].upper()} ({win['weather_desc']} {win['weather_emoji']}, {win['temp']:.1f}°C)")
-        lines.append("")
-    return "\n".join(lines)
-
-def send_email_report(html_content: str, regions_predictions: dict, 
-                      warnings: list, config: dict) -> None:
-    """Delivers 2-hour email briefing to recipients via SMTP."""
-    smtp_server = os.environ.get("SMTP_SERVER")
-    smtp_port = os.environ.get("SMTP_PORT")
-    smtp_user = os.environ.get("SMTP_USER")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
-    recipient_emails = os.environ.get("RECIPIENT_EMAILS")
-    
-    if not all([smtp_server, smtp_port, smtp_user, smtp_password, recipient_emails]):
-        raise ValueError("SMTP variables are not fully configured in the environment.")
-        
-    recipients = [r.strip() for r in recipient_emails.split(",") if r.strip()]
-    current_date = datetime.datetime.now().strftime("%B %d, %Y")
-    
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"{config['email_settings']['subject_prefix']} - {current_date}"
-    msg["From"] = f"{config['email_settings']['sender_name']} <{smtp_user}>"
-    msg["To"] = ", ".join(recipients)
-    
-    msg.attach(MIMEText(build_text_fallback(regions_predictions, warnings), "plain", "utf-8"))
-    msg.attach(MIMEText(html_content, "html", "utf-8"))
-    
-    port = int(smtp_port)
-    server = smtplib.SMTP_SSL(smtp_server, port) if port == 465 else smtplib.SMTP(smtp_server, port)
-    if port == 587:
-        server.starttls()
-        
-    server.login(smtp_user, smtp_password)
-    server.sendmail(smtp_user, recipients, msg.as_string())
-    server.quit()

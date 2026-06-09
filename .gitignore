@@ -1,13 +1,14 @@
-# Local secret keys
+# Local secrets and credentials
 secrets.yaml
+config/secrets.yaml
 
-# Local email previews
-email_preview.html
-
-# Local weather data dumps
-raw_weather_data.json
+# Local data & briefing previews
+output/
 
 # Python compiled files
 __pycache__/
 *.py[cod]
 *$py.class
+.venv/
+env/
+
