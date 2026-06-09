@@ -24,8 +24,8 @@ An automated, data-driven Python system that fetches historical and forecast wea
   - Responsive web layout hosted for free on GitHub Pages.
   - Nested tab navigation (Day tabs at top level, Mountain subtabs at second level) for clean data density.
   - High-contrast color-coded condition badges (`dusty`, `dry`, `good`, `damp`, `wet`, `muddy`).
-  - Day-specific overview tables listing all regions at the top of each day's tab.
-  - Detailed mountain analysis including 7 days of recent history, maps, and 2-hour window grids.
+  - Day-specific overview tables with time-of-day rows (Morning/Afternoon/Evening) and mountain columns for quick at-a-glance comparison.
+  - Detailed mountain analysis with transposed 2-hour window tables (time rows × metric columns: Weather, Temp, Precip, Soil, Roots/Rocks), 7 days of recent history, and maps.
 - **Automated Deployments**: Run on a cron schedule every 3 hours during active waking hours via GitHub Actions, auto-publishing to your Pages site.
 
 ---
